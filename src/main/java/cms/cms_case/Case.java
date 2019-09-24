@@ -27,22 +27,6 @@ public class Case {
         setState(openState);
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public CaseManager getCaseManager() {
-        return caseManager;
-    }
-
-    public CasePaymentOrder getCasePaymentOrder() {
-        return casePaymentOrder;
-    }
-
     public void issuePayment(Double amountToPay) throws InvalidCaseStateException {
         currentState.issuePayment(this, amountToPay);
     }
@@ -71,6 +55,22 @@ public class Case {
 
     void notifyPaymentListener() {
         paymentOrderListener.onPaymentOrderChange(getCasePaymentOrder());
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public CaseManager getCaseManager() {
+        return caseManager;
+    }
+
+    public CasePaymentOrder getCasePaymentOrder() {
+        return casePaymentOrder;
     }
 
     @Override

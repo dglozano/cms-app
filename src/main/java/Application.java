@@ -30,7 +30,7 @@ public class Application {
         CaseManager firstCaseManager = firstCase.getCaseManager();
         firstCaseManager.rejectCase(firstCase);
         firstCaseManager.authorizePendingCase(firstCase);
-        firstCaseManager.issuePaymentOrderForCase(firstCase, 100d);
+        firstCaseManager.issuePaymentOrderForCase(firstCase, 100d);  // will be approved immediately
 
         System.out.println();
 

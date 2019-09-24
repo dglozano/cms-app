@@ -6,7 +6,7 @@ class OpenCaseState extends CaseState {
     void issuePayment(Case caseContext, Double amountToPay) {
         CasePaymentOrder casePaymentOrder = new CasePaymentOrder(amountToPay, caseContext);
         if (amountToPay <= caseContext.getCaseManager().getPaymentLimit()) {
-            casePaymentOrder.setAuthorized(true);
+            casePaymentOrder.authorize();
             caseContext.setCasePaymentOrder(casePaymentOrder);
             caseContext.notifyPaymentListener();
             caseContext.setState(Case.resolvedState);

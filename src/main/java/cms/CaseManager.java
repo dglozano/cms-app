@@ -111,7 +111,7 @@ public class CaseManager {
         return casesToAudit;
     }
 
-    void addCaseToAudit(Case caseToAudit) {
+    public void addCaseToAudit(Case caseToAudit) {
         this.casesToAudit.add(caseToAudit);
     }
 

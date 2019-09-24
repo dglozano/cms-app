@@ -26,8 +26,12 @@ public class CasePaymentOrder implements PaymentOrder {
         return authorized;
     }
 
-    public void setAuthorized(Boolean authorized) {
-        this.authorized = authorized;
+    public void authorize() {
+        this.authorized = true;
+    }
+
+    public void reject() {
+        this.authorized = false;
     }
 
     @Override

@@ -35,6 +35,18 @@ public class CaseManagementSystem implements CasesPaymentOrderListener {
         return newCase;
     }
 
+    public void enrollNewCaseManager(String firstName, String lastName, Double paymentLimit) {
+        CaseManager caseManager = new CaseManager(nextId++, firstName, lastName, paymentLimit);
+        caseManagers.add(caseManager);
+        System.out.println(String.format("New case manager created: %s", caseManager.toString()));
+    }
+
+    public void enrollNewCaseManager(String firstName, String lastName, Double paymentLimit, Double paymentAuditingLimit) {
+        CaseManager caseManager = new CaseManager(nextId++, firstName, lastName, paymentLimit, paymentAuditingLimit);
+        caseManagers.add(caseManager);
+        System.out.println(String.format("New case manager created: %s", caseManager.toString()));
+    }
+
     @Override
     public void onPaymentOrderChange(CasePaymentOrder casePaymentOrder) {
         checkPaymentOrderAuthorization(casePaymentOrder);
@@ -51,18 +63,6 @@ public class CaseManagementSystem implements CasesPaymentOrderListener {
     private void assignCaseToAuditor(Case caseToAudit) {
         CaseManager chosenAuditor = caseAuditorSelectionStrategy.selectCaseManagerAuditorForCase(caseManagers, caseToAudit);
         chosenAuditor.addCaseToAudit(caseToAudit);
-    }
-
-    public void enrollNewCaseManager(String firstName, String lastName, Double paymentLimit) {
-        CaseManager caseManager = new CaseManager(nextId++, firstName, lastName, paymentLimit);
-        caseManagers.add(caseManager);
-        System.out.println(String.format("New case manager created: %s", caseManager.toString()));
-    }
-
-    public void enrollNewCaseManager(String firstName, String lastName, Double paymentLimit, Double paymentAuditingLimit) {
-        CaseManager caseManager = new CaseManager(nextId++, firstName, lastName, paymentLimit, paymentAuditingLimit);
-        caseManagers.add(caseManager);
-        System.out.println(String.format("New case manager created: %s", caseManager.toString()));
     }
 
     public List<Case> getCases() {

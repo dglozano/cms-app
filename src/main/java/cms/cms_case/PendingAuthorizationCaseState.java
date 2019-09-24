@@ -4,7 +4,7 @@ class PendingAuthorizationCaseState extends CaseState {
 
     @Override
     void approvePendingPayment(Case caseContext) {
-        caseContext.getCasePaymentOrder().setAuthorized(true);
+        caseContext.getCasePaymentOrder().authorize();
         caseContext.notifyPaymentListener();
         caseContext.setState(Case.resolvedState);
     }
