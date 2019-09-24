@@ -18,12 +18,19 @@ public class Application {
         caseManagementSystem.enrollNewCaseManager("Auditor", "Segundo", 1000d, 600000d);
         caseManagementSystem.enrollNewCaseManager("Auditor", "Tercero", 1000d, 800000d);
 
-        Case firstCase = caseManagementSystem.createCase("One Customer");
-        Case secondCase = caseManagementSystem.createCase("Second Customer");
-        Case thirdCase = caseManagementSystem.createCase("Third Customer");
-        Case fourthCase = caseManagementSystem.createCase("Fourth Customer");
-        Case fifthCase = caseManagementSystem.createCase("Fifth Customer");
-        Case sixthCase = caseManagementSystem.createCase("Sixth Customer");
+        caseManagementSystem.createCase("One Customer");
+        caseManagementSystem.createCase("Second Customer");
+        caseManagementSystem.createCase("Third Customer");
+        caseManagementSystem.createCase("Fourth Customer");
+        caseManagementSystem.createCase("Fifth Customer");
+        caseManagementSystem.createCase("Sixth Customer");
+
+        Case firstCase = caseManagementSystem.getCases().get(0);
+        Case secondCase = caseManagementSystem.getCases().get(1);
+        Case thirdCase = caseManagementSystem.getCases().get(2);
+        Case fourthCase = caseManagementSystem.getCases().get(3);
+        Case fifthCase = caseManagementSystem.getCases().get(4);
+        Case sixthCase = caseManagementSystem.getCases().get(5);
 
         System.out.println();
 

@@ -3,8 +3,12 @@ package cms.cms_case;
 class PendingAuthorizationCaseState extends CaseState {
 
     @Override
-    void approvePendingPayment(Case caseContext) {
-        caseContext.getCasePaymentOrder().authorize();
+    void approvePendingPayment(Case caseContext) throws InvalidCaseStateException {
+        caseContext.getCasePaymentOrder()
+                .orElseThrow(() -> new InvalidCaseStateException("<Approve Pending Payment>",
+                        caseContext.getId().toString(),
+                        getStateName()))
+                .authorize();
         caseContext.notifyPaymentListener();
         caseContext.setState(Case.resolvedState);
     }

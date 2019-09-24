@@ -4,10 +4,7 @@ import cms.cms_case.Case;
 import cms.cms_case.CasePaymentOrder;
 import cms.payment.PaymentService;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class CaseManagementSystem implements CasesPaymentOrderListener {
 
@@ -26,13 +23,17 @@ public class CaseManagementSystem implements CasesPaymentOrderListener {
         this.caseWorkerAssignmentStrategy = new RandomWorkerAssignmentStrategy();
     }
 
-    public Case createCase(String customerName) {
-        CaseManager selectedCaseManager = caseWorkerAssignmentStrategy.selectConvinientCaseWorker(caseManagers);
-        Case newCase = new Case(nextId++, customerName, selectedCaseManager, this);
-        selectedCaseManager.assignCase(newCase);
-        cases.add(newCase);
-        System.out.println(String.format("New case created: %s", newCase.toString()));
-        return newCase;
+    public void createCase(String customerName) {
+        Optional<CaseManager> optionalCaseManager = caseWorkerAssignmentStrategy.selectConvinientCaseWorker(caseManagers);
+        if (optionalCaseManager.isPresent()) {
+            CaseManager caseManager = optionalCaseManager.get();
+            Case newCase = new Case(nextId++, customerName, caseManager, this);
+            caseManager.assignCase(newCase);
+            cases.add(newCase);
+            System.out.println(String.format("New case created: %s", newCase.toString()));
+        } else {
+            System.out.println("ERROR. There are no possible caseworkers to create case.");
+        }
     }
 
     public void enrollNewCaseManager(String firstName, String lastName, Double paymentLimit) {
@@ -56,13 +57,23 @@ public class CaseManagementSystem implements CasesPaymentOrderListener {
         if (casePaymentOrder.isAuthorized()) {
             paymentService.makePayment(casePaymentOrder);
         } else {
-            assignCaseToAuditor(casePaymentOrder.getCase());
+            try {
+                assignCaseToAuditor(casePaymentOrder.getCase());
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
         }
     }
 
-    private void assignCaseToAuditor(Case caseToAudit) {
-        CaseManager chosenAuditor = caseAuditorSelectionStrategy.selectCaseManagerAuditorForCase(caseManagers, caseToAudit);
-        chosenAuditor.addCaseToAudit(caseToAudit);
+    private void assignCaseToAuditor(Case caseToAudit) throws Exception {
+        Double amountToPay = caseToAudit.getCasePaymentOrder()
+                .orElseThrow(() -> new Exception(String.format("Couldn't select an auditor for case %s" +
+                        " because it doens't have a PaymentOrderIssued", caseToAudit.toString())))
+                .getAmount();
+        caseAuditorSelectionStrategy
+                .selectCaseManagerAuditorForCase(caseManagers, caseToAudit.getCaseManager(), amountToPay)
+                .orElseThrow(() -> new Exception(String.format("ERROR. There are no possible auditors for case %s", caseToAudit.toString())))
+                .addCaseToAudit(caseToAudit);
     }
 
     public List<Case> getCases() {
@@ -74,35 +85,41 @@ public class CaseManagementSystem implements CasesPaymentOrderListener {
     }
 
     public interface CaseWorkerAssignmentStrategy {
-        CaseManager selectConvinientCaseWorker(List<CaseManager> caseManagers);
+        Optional<CaseManager> selectConvinientCaseWorker(List<CaseManager> caseManagers);
     }
 
     public interface CaseAuditorSelectionStrategy {
-        CaseManager selectCaseManagerAuditorForCase(List<CaseManager> caseManagers, Case pendingCase);
+        Optional<CaseManager> selectCaseManagerAuditorForCase(List<CaseManager> caseManagers,
+                                                              final CaseManager assignedCaseManager,
+                                                              final Double amountToPay);
     }
 
     public class RandomWorkerAssignmentStrategy implements CaseManagementSystem.CaseWorkerAssignmentStrategy {
 
         private final Random RANDOM = new Random();
 
-        //TODO: throw Exception if no caseManager matches the criteria
         @Override
-        public CaseManager selectConvinientCaseWorker(List<CaseManager> caseManagers) {
+        public Optional<CaseManager> selectConvinientCaseWorker(List<CaseManager> caseManagers) {
 
-            return caseManagers.get(RANDOM.nextInt(caseManagers.size()));
+            return caseManagers.isEmpty() ?
+                    Optional.empty() :
+                    Optional.of(caseManagers.get(RANDOM.nextInt(caseManagers.size())));
         }
     }
 
     public class LowestPrivilegeAuditorSelectionStrategy implements CaseManagementSystem.CaseAuditorSelectionStrategy {
 
-        //TODO: throw Exception if no caseManager matches the criteria
         @Override
-        public CaseManager selectCaseManagerAuditorForCase(List<CaseManager> caseManagers, final Case pendingCase) {
+        public Optional<CaseManager> selectCaseManagerAuditorForCase(List<CaseManager> caseManagers,
+                                                                     final CaseManager assignedCaseManager,
+                                                                     final Double amountToPay) {
             return caseManagers.stream()
-                    .filter(caseManager -> !caseManager.equals(pendingCase.getCaseManager())
-                            && caseManager.getPaymentAuditingLimit() >= pendingCase.getCasePaymentOrder().getAmount())
-                    .min(Comparator.comparing(CaseManager::getPaymentAuditingLimit))
-                    .get();
+                    .filter(caseManager -> {
+                        boolean isTheCaseManagerOfTheCase = caseManager.equals(assignedCaseManager);
+                        boolean canAuditTheMoneyAmount = caseManager.getPaymentAuditingLimit() >= amountToPay;
+                        return !isTheCaseManagerOfTheCase && canAuditTheMoneyAmount;
+                    })
+                    .min(Comparator.comparing(CaseManager::getPaymentAuditingLimit));
         }
     }
 }

@@ -4,6 +4,7 @@ import cms.CaseManager;
 import cms.CasesPaymentOrderListener;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class Case {
 
@@ -54,7 +55,7 @@ public class Case {
     }
 
     void notifyPaymentListener() {
-        paymentOrderListener.onPaymentOrderChange(getCasePaymentOrder());
+        getCasePaymentOrder().ifPresent(paymentOrder -> paymentOrderListener.onPaymentOrderChange(paymentOrder));
     }
 
     public Integer getId() {
@@ -69,8 +70,8 @@ public class Case {
         return caseManager;
     }
 
-    public CasePaymentOrder getCasePaymentOrder() {
-        return casePaymentOrder;
+    public Optional<CasePaymentOrder> getCasePaymentOrder() {
+        return Optional.of(casePaymentOrder);
     }
 
     @Override
